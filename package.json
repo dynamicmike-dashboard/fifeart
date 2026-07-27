@@ -1,0 +1,24 @@
+{
+  "name": "fifeart-github",
+  "version": "1.0.0",
+  "description": "FifeArt — Original paintings by Nancy Berry",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "next": "^16.2.12",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.17",
+    "typescript": "^5.9.3"
+  }
+}
