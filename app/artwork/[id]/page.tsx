@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { getPaintings, getPaintingById } from "@/lib/teable";
 import { getFullImageUrl, getStatusDisplay } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -44,12 +45,15 @@ export default async function ArtworkPage({ params }: Props) {
     <div className="artwork-page">
       <a href="/" className="back-link">&larr; Back to Gallery</a>
 
-      <img
-        src={getFullImageUrl(art)}
-        alt={art.fields.title}
-        className="artwork-main"
-        style={dims?.width && dims?.height ? { aspectRatio: `${dims.width}/${dims.height}` } : undefined}
-      />
+      <div className="artwork-img-wrap" style={{ aspectRatio: `${dims?.width || 1200}/${dims?.height || 900}` }}>
+        <Image
+          src={getFullImageUrl(art)}
+          alt={art.fields.title}
+          fill
+          className="artwork-main"
+          priority
+        />
+      </div>
 
       <h1>{art.fields.title}</h1>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { PaintingRecord } from "@/lib/types";
 import { getThumbUrl, getFullImageUrl, getStatusDisplay, sortByOrder } from "@/lib/utils";
 import CommissionModal from "./CommissionModal";
@@ -75,7 +76,13 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
                 onClick={() => setLightbox(art)}
               >
                 <div className="thumb-wrapper">
-                  <img src={getThumbUrl(art)} alt={art.fields.title} loading="lazy" />
+                  <Image
+                    src={getThumbUrl(art)}
+                    alt={art.fields.title}
+                    fill
+                    sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                    className="gallery-img"
+                  />
                 </div>
                 <h3>{art.fields.title}</h3>
                 <p className="meta">
@@ -94,7 +101,14 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
           <div id="lightbox-overlay" onClick={() => setLightbox(null)} />
           <div id="lightbox-content">
             <div className="lightbox-inner">
-              <img src={getFullImageUrl(lightbox)} alt={lightbox.fields.title} className="art-large" />
+              <Image
+                src={getFullImageUrl(lightbox)}
+                alt={lightbox.fields.title}
+                width={lightbox.fields.image?.[0]?.width || 1200}
+                height={lightbox.fields.image?.[0]?.height || 900}
+                className="art-large"
+                priority
+              />
               <h2>{lightbox.fields.title}</h2>
               <p className="lb-detail">
                 {lightbox.fields.medium}

@@ -2,12 +2,30 @@ import { PaintingRecord } from "./types";
 
 export function getThumbUrl(painting: PaintingRecord): string {
   const img = painting.fields.image?.[0];
-  return img?.smThumbnailUrl || img?.presignedUrl || "";
+  return img?.lgThumbnailUrl || img?.smThumbnailUrl || img?.presignedUrl || "";
 }
 
 export function getFullImageUrl(painting: PaintingRecord): string {
   const img = painting.fields.image?.[0];
-  return img?.lgThumbnailUrl || img?.presignedUrl || "";
+  return img?.presignedUrl || img?.lgThumbnailUrl || "";
+}
+
+export function getImageProps(painting: PaintingRecord): {
+  src: string;
+  width: number;
+  height: number;
+  blurDataURL: string;
+} | null {
+  const img = painting.fields.image?.[0];
+  if (!img?.presignedUrl) return null;
+  const w = img.width || 1200;
+  const h = img.height || 900;
+  return {
+    src: img.lgThumbnailUrl || img.presignedUrl,
+    width: w,
+    height: h,
+    blurDataURL: img.smThumbnailUrl || img.presignedUrl,
+  };
 }
 
 export function getImageDimensions(painting: PaintingRecord): { w: number; h: number } | null {
