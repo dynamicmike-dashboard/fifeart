@@ -1,4 +1,4 @@
-import { updateOrder } from "@/lib/teable";
+import { updatePainting } from "@/lib/teable";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
@@ -7,6 +7,16 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { updates } = await request.json();
-  await updateOrder(updates);
+  const errors: string[] = [];
+  for (const u of updates) {
+    try {
+      await updatePainting(u.id, { order: u.order });
+    } catch (e) {
+      errors.push(u.id);
+    }
+  }
+  if (errors.length > 0) {
+    return Response.json({ ok: false, errors }, { status: 207 });
+  }
   return Response.json({ ok: true });
 }
