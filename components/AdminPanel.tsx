@@ -25,7 +25,7 @@ function emptyFields(): Record<string, any> {
   };
 }
 
-const emptyImage = { id: "", name: "", path: "", token: "", size: 0, mimetype: "", presignedUrl: "" };
+
 
 export default function AdminPanel() {
   const [paintings, setPaintings] = useState<PaintingRecord[]>([]);
@@ -57,37 +57,31 @@ export default function AdminPanel() {
     }
   }
 
-  async function uploadImage(file: File): Promise<any> {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || e.error || "Upload failed"); }
-    return res.json();
-  }
-
   async function saveNew() {
     if (saving) return;
     setSaving(true);
     try {
-      let image = null;
-      if (addImage) {
-        image = await uploadImage(addImage);
-      }
       const fields = { ...addFields };
-      if (image) fields.image = [{ id: image.id }];
       const res = await fetch("/api/paintings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fields }),
       });
       if (!res.ok) { const e = await res.json(); alert("Save failed: " + (e.error || "unknown")); return; }
+      const record = await res.json();
+      if (addImage && record?.id) {
+        const fd = new FormData();
+        fd.append("file", addImage);
+        const ur = await fetch(`/api/upload?recordId=${record.id}`, { method: "POST", body: fd });
+        if (!ur.ok) { const e = await ur.json(); alert("Image upload failed: " + (e.detail || e.error)); return; }
+      }
       setShowAdd(false);
       setAddFields(emptyFields());
       setAddImage(null);
       setAddImagePreview("");
       await load();
     } catch (e: any) {
-      alert("Upload error: " + e.message);
+      alert("Error: " + e.message);
     } finally {
       setSaving(false);
     }
@@ -97,27 +91,32 @@ export default function AdminPanel() {
     if (saving) return;
     setSaving(true);
     try {
-      let imageField = undefined;
-      if (editImage) {
-        const uploaded = await uploadImage(editImage);
-        if (uploaded) imageField = [{ id: uploaded.id }];
-      }
       const fields = { ...editFields };
       delete fields.image;
-      if (imageField) fields.image = imageField;
       const res = await fetch("/api/paintings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, fields }),
       });
       if (!res.ok) { const e = await res.json(); alert("Save failed: " + (e.error || "unknown")); return; }
+      if (editImage) {
+        await fetch("/api/paintings", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, fields: { image: [] } }),
+        });
+        const fd = new FormData();
+        fd.append("file", editImage);
+        const ur = await fetch(`/api/upload?recordId=${id}`, { method: "POST", body: fd });
+        if (!ur.ok) { const e = await ur.json(); alert("Image upload failed: " + (e.detail || e.error)); return; }
+      }
       setEditingId(null);
       setEditFields(emptyFields());
       setEditImage(null);
       setEditImagePreview("");
       await load();
     } catch (e: any) {
-      alert("Upload error: " + e.message);
+      alert("Error: " + e.message);
     } finally {
       setSaving(false);
     }

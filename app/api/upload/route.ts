@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 const BASE_URL = process.env.TEABLE_API_URL;
 const TABLE_ID = process.env.TEABLE_TABLE_ID;
 const TOKEN = process.env.TEABLE_API_TOKEN;
+const IMAGE_FIELD_ID = "fld3Qxe2JyFvjD5x42U";
 
 export async function POST(request: Request) {
   const c = await cookies();
@@ -12,6 +13,12 @@ export async function POST(request: Request) {
   }
   if (!BASE_URL || !TABLE_ID || !TOKEN) {
     return Response.json({ error: "Not configured" }, { status: 500 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const recordId = searchParams.get("recordId");
+  if (!recordId) {
+    return Response.json({ error: "Missing recordId" }, { status: 400 });
   }
 
   const formData = await request.formData();
@@ -27,10 +34,12 @@ export async function POST(request: Request) {
   const teableForm = new FormData();
   teableForm.append("file", new Blob([webpBuf], { type: "image/webp" }), filename);
 
-  const res = await fetch(
-    `${BASE_URL}/api/table/${TABLE_ID}/attachment/upload`,
-    { method: "POST", headers: { Authorization: `Bearer ${TOKEN}` }, body: teableForm }
-  );
+  const url = `${BASE_URL}/api/table/${TABLE_ID}/record/${recordId}/${IMAGE_FIELD_ID}/uploadAttachment`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${TOKEN}` },
+    body: teableForm,
+  });
 
   if (!res.ok) {
     const text = await res.text();
