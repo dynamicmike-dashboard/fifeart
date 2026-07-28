@@ -43,6 +43,7 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
           <h1>FifeArt</h1>
           <p>Original paintings by Nancy Berry — available in the UK</p>
           <div className="header-links">
+            <a href="/about" className="header-link">About</a>
             <button className="header-link" onClick={() => setShowCommission(true)}>Commission</button>
             <button className="header-link" onClick={() => setShowEnquiry(true)}>Enquiries</button>
           </div>

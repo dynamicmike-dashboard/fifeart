@@ -38,13 +38,33 @@ export default function AdminPanel() {
   const [addImage, setAddImage] = useState<File | null>(null);
   const [addImagePreview, setAddImagePreview] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"artworks" | "about">("artworks");
+  const [aboutId, setAboutId] = useState<string | null>(null);
+  const [aboutTitle, setAboutTitle] = useState("");
+  const [aboutStory, setAboutStory] = useState("");
+  const [aboutImage, setAboutImage] = useState<File | null>(null);
+  const [aboutImagePreview, setAboutImagePreview] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/paintings");
     if (res.ok) setPaintings(await res.json());
   }, []);
 
+  const loadAbout = useCallback(async () => {
+    const res = await fetch("/api/about");
+    if (res.ok) {
+      const data = await res.json();
+      if (data) {
+        setAboutId(data.id);
+        setAboutTitle(data.fields?.title || "");
+        setAboutStory(data.fields?.story || "");
+      }
+    }
+  }, []);
+
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => { if (tab === "about") loadAbout(); }, [tab, loadAbout]);
 
   function handleFileSelect(file: File | null, setImage: (f: File | null) => void, setPreview: (s: string) => void) {
     setImage(file);
@@ -236,13 +256,68 @@ export default function AdminPanel() {
   return (
     <div className="admin-container">
       <div className="admin-header">
-        <h1>FifeArt — Manage Artworks</h1>
+        <h1>FifeArt — Admin</h1>
         <a href="/" style={{ fontSize: "0.85rem", color: "#78716c" }}>&larr; Back to Gallery</a>
       </div>
 
+      <div className="tabs">
+        <button className={`tab ${tab === "artworks" ? "active" : ""}`} onClick={() => setTab("artworks")}>Artworks</button>
+        <button className={`tab ${tab === "about" ? "active" : ""}`} onClick={() => setTab("about")}>About</button>
+      </div>
+
+      {tab === "about" && (
+        <div className="form-section">
+          <h3>About the Artist</h3>
+          <div className="form-grid">
+            <div className="full">
+              <label>Title</label>
+              <input value={aboutTitle} onChange={(e) => setAboutTitle(e.target.value)} placeholder="About the Artist" />
+            </div>
+            <div className="full">
+              <label>Story</label>
+              <textarea value={aboutStory} onChange={(e) => setAboutStory(e.target.value)} rows={8} placeholder="Artist biography…" style={{ width: "100%", padding: "0.5rem", borderRadius: "0.35rem", border: "1px solid #d6d3d1", fontFamily: "inherit", fontSize: "0.9rem" }} />
+            </div>
+            {photoField(aboutImagePreview, undefined, setAboutImage, setAboutImagePreview, "about")}
+          </div>
+          <div className="form-actions">
+            <button className="primary" onClick={async () => {
+              setSaving(true);
+              try {
+                let imgId = null;
+                if (aboutImage) {
+                  const fd = new FormData();
+                  fd.append("file", aboutImage);
+                  const r = await fetch(`/api/upload?recordId=${aboutId || ""}`, { method: "POST", body: fd });
+                  if (!r.ok) { const e = await r.json(); alert("Image upload: " + (e.detail || e.error)); return; }
+                }
+                const res = await fetch("/api/about", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ id: aboutId, fields: { title: aboutTitle, story: aboutStory } }),
+                });
+                if (!res.ok) { const e = await res.json(); alert("Save failed: " + e.error); return; }
+                const saved = await res.json();
+                setAboutId(saved.id || saved.records?.[0]?.id);
+                if (aboutImage) {
+                  const fd = new FormData();
+                  fd.append("file", aboutImage);
+                  const bid = saved.id || saved.records?.[0]?.id;
+                  if (!aboutId) {
+                    const r2 = await fetch(`/api/upload?recordId=${bid}`, { method: "POST", body: fd });
+                    if (!r2.ok) { const e = await r2.json(); alert("Image upload: " + (e.detail || e.error)); return; }
+                  }
+                }
+                alert("About page saved!");
+              } catch (e: any) { alert("Error: " + e.message); }
+              finally { setSaving(false); }
+            }} disabled={saving}>{saving ? "Saving..." : "Save About Page"}</button>
+          </div>
+        </div>
+      )}
+
+      {tab === "artworks" && (<>
       <div className="toolbar">
         <button className="primary" onClick={() => setShowAdd(!showAdd)}>+ Add Artwork</button>
-
       </div>
 
       {showAdd && (
@@ -394,6 +469,7 @@ export default function AdminPanel() {
           );
         })}
       </div>
+      </>)}
     </div>
   );
 }
