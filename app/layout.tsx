@@ -13,12 +13,23 @@ export const metadata: Metadata = {
     locale: "en_GB",
     type: "website",
   },
+  icons: [{ rel: "icon", url: "/icon-192.png" }],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <meta name="theme-color" content="#1c1917" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+      </head>
+      <body>
+        {children}
+        <script dangerouslySetInnerHTML={{
+          __html: `if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}`,
+        }} />
+      </body>
     </html>
   );
 }
