@@ -1,3 +1,4 @@
+import sharp from "sharp";
 import { cookies } from "next/headers";
 
 const BASE_URL = process.env.TEABLE_API_URL;
@@ -14,13 +15,17 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
-  const file = formData.get("file");
+  const file = formData.get("file") as File | null;
   if (!file) {
     return Response.json({ error: "No file" }, { status: 400 });
   }
 
+  const buf = Buffer.from(await file.arrayBuffer());
+  const webpBuf = await sharp(buf).webp({ quality: 82 }).toBuffer();
+  const webpFile = new File([webpBuf], file.name.replace(/\.[^.]+$/, "") + ".webp", { type: "image/webp" });
+
   const teableForm = new FormData();
-  teableForm.append("file", file);
+  teableForm.append("file", webpFile);
 
   const res = await fetch(
     `${BASE_URL}/api/table/${TABLE_ID}/attachment/upload`,
