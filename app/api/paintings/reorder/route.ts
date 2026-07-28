@@ -7,16 +7,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { updates } = await request.json();
-  const errors: string[] = [];
   for (const u of updates) {
-    try {
-      await updatePainting(u.id, { order: u.order });
-    } catch (e) {
-      errors.push(u.id);
-    }
-  }
-  if (errors.length > 0) {
-    return Response.json({ ok: false, errors }, { status: 207 });
+    await updatePainting(u.id, { order: u.order });
   }
   return Response.json({ ok: true });
 }

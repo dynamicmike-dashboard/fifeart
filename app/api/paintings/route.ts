@@ -26,8 +26,12 @@ export async function PATCH(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id, fields } = await request.json();
-  await updatePainting(id, fields);
-  return Response.json({ ok: true });
+  try {
+    await updatePainting(id, fields);
+    return Response.json({ ok: true });
+  } catch (e: any) {
+    return Response.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: Request) {

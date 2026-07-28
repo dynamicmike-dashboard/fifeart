@@ -171,7 +171,7 @@ export default function AdminPanel() {
       <div className="full">
         <label>Photo</label>
         <input
-          type="file" accept="image/*" capture="environment"
+          type="file" accept="image/*"
           onChange={(e) => handleFileSelect(e.target.files?.[0] || null, setFile, setPreview)}
           style={{ fontSize: "0.85rem" }}
         />

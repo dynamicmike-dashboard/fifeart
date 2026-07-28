@@ -56,16 +56,21 @@ export async function createPainting(fields: Record<string, unknown>): Promise<P
   return data.records?.[0] as PaintingRecord;
 }
 
-export async function updatePainting(recordId: string, fields: Record<string, unknown>): Promise<void> {
-  if (!isConfigured()) return;
-  await fetch(
-    `${BASE_URL}/api/table/${TABLE_ID}/record/${recordId}?fieldKeyType=name`,
+export async function updatePainting(recordId: string, fields: Record<string, unknown>): Promise<any> {
+  if (!isConfigured()) return null;
+  const res = await fetch(
+    `${BASE_URL}/api/table/${TABLE_ID}/record?fieldKeyType=name`,
     {
       method: "PATCH",
       headers: authHeaders(),
-      body: JSON.stringify({ fields }),
+      body: JSON.stringify({ records: [{ id: recordId, fields }] }),
     }
   );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Teable PATCH ${res.status}: ${text}`);
+  }
+  return res.json();
 }
 
 export async function deletePainting(recordId: string): Promise<void> {
