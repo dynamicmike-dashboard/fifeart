@@ -36,11 +36,12 @@ Single record for About the Artist page
 - `image` on about: `fldezzdRONvqtLpbFE5`
 - `order` on paintings: `fldj9A8Ssz4vCU2vXy1`
 
-## KNOWN BUGS (not yet fixed)
-1. Image upload — record-level endpoint works but images may not display (check `{ id }` reference format vs full object)
-2. Reorder (up/down arrows) — batch PATCH returns ok but order may not persist
-3. (Resolved) Gmail SMTP — App Password configured, `SMTP_USER=nancyberrykdy@gmail.com`, emails to both nancyberrykdy + dynamicmike+fifeart
-4. `www.fifeart.com` DNS points to Vercel but domain not added in Vercel Dashboard → Domains
+## RESOLVED
+- Image upload + reorder — both working
+- Gmail SMTP — App Password configured, `SMTP_USER=nancyberrykdy@gmail.com`, emails to both nancyberrykdy + dynamicmike+fifeart
+
+## STILL OPEN
+- `www.fifeart.com` DNS points to Vercel but domain not added in Vercel Dashboard → Domains
 
 ## DEPLOYMENT COMMANDS
 - `npx next build` — local build

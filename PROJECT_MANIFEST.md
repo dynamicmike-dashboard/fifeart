@@ -23,9 +23,8 @@
 - Added PWA support: manifest.json, icons (192/512), service worker, theme meta
 
 ## PENDING / NEXT
-- [ ] Fix image upload not displaying (check `{ id }` reference vs what Teable returns on GET)
-- [ ] Fix reorder persistence (batch PATCH succeeds but order may not change)
-- [x] Configure Gmail SMTP — App Password set, `SMTP_USER=nancyberrykdy@gmail.com`, `EMAIL_ENABLED=true`, sending to both addresses
+- [x] Image upload + reorder — both confirmed working
+- [x] Gmail SMTP configured — App Password, `SMTP_USER=nancyberrykdy@gmail.com`, sending to both addresses
 - [ ] Add `www.fifeart.com` domain in Vercel Dashboard → Domains
 - [ ] Add proper metadata/titles for all 60 paintings via /admin
 - [ ] Consider replacing about table (`tblG1JCrNBFlRslVa4J`) with properly named table
