@@ -17,7 +17,7 @@ export async function getPaintings(): Promise<PaintingRecord[]> {
   try {
     const res = await fetch(
       `${BASE_URL}/api/table/${TABLE_ID}/record?fieldKeyType=name&limit=200`,
-      { headers: authHeaders(), next: { revalidate: 60 } }
+      { headers: authHeaders(), cache: "no-store" }
     );
     if (!res.ok) return [];
     const data = await res.json();
@@ -32,7 +32,7 @@ export async function getPaintingById(recordId: string): Promise<PaintingRecord 
   try {
     const res = await fetch(
       `${BASE_URL}/api/table/${TABLE_ID}/record/${recordId}?fieldKeyType=name`,
-      { headers: authHeaders(), next: { revalidate: 60 } }
+      { headers: authHeaders(), cache: "no-store" }
     );
     if (!res.ok) return null;
     const data = await res.json();

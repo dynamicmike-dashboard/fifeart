@@ -22,10 +22,10 @@ export async function POST(request: Request) {
 
   const buf = Buffer.from(await file.arrayBuffer());
   const webpBuf = await sharp(buf).webp({ quality: 82 }).toBuffer();
-  const webpFile = new File([webpBuf], file.name.replace(/\.[^.]+$/, "") + ".webp", { type: "image/webp" });
+  const filename = file.name.replace(/\.[^.]+$/, "") + ".webp";
 
   const teableForm = new FormData();
-  teableForm.append("file", webpFile);
+  teableForm.append("file", new Blob([webpBuf], { type: "image/webp" }), filename);
 
   const res = await fetch(
     `${BASE_URL}/api/table/${TABLE_ID}/attachment/upload`,
@@ -34,7 +34,8 @@ export async function POST(request: Request) {
 
   if (!res.ok) {
     const text = await res.text();
-    return Response.json({ error: "Upload failed", detail: text }, { status: 502 });
+    console.error("Teable upload error", res.status, text);
+    return Response.json({ error: "Upload failed", detail: text, teableStatus: res.status }, { status: 502 });
   }
 
   const data = await res.json();

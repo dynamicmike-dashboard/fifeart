@@ -61,7 +61,7 @@ export default function AdminPanel() {
     const fd = new FormData();
     fd.append("file", file);
     const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) return null;
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || e.error || "Upload failed"); }
     return res.json();
   }
 
@@ -74,7 +74,7 @@ export default function AdminPanel() {
         image = await uploadImage(addImage);
       }
       const fields = { ...addFields };
-      if (image) fields.image = [image];
+      if (image) fields.image = [{ id: image.id }];
       const res = await fetch("/api/paintings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,6 +86,8 @@ export default function AdminPanel() {
       setAddImage(null);
       setAddImagePreview("");
       await load();
+    } catch (e: any) {
+      alert("Upload error: " + e.message);
     } finally {
       setSaving(false);
     }
@@ -98,7 +100,7 @@ export default function AdminPanel() {
       let imageField = undefined;
       if (editImage) {
         const uploaded = await uploadImage(editImage);
-        if (uploaded) imageField = [uploaded];
+        if (uploaded) imageField = [{ id: uploaded.id }];
       }
       const fields = { ...editFields };
       delete fields.image;
@@ -114,6 +116,8 @@ export default function AdminPanel() {
       setEditImage(null);
       setEditImagePreview("");
       await load();
+    } catch (e: any) {
+      alert("Upload error: " + e.message);
     } finally {
       setSaving(false);
     }
