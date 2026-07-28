@@ -40,8 +40,7 @@ Single record for About the Artist page
 - Image upload + reorder — both working
 - Gmail SMTP — App Password configured, `SMTP_USER=nancyberrykdy@gmail.com`, emails to both nancyberrykdy + dynamicmike+fifeart
 
-## STILL OPEN
-- `www.fifeart.com` DNS points to Vercel but domain not added in Vercel Dashboard → Domains
+(All items resolved)
 
 ## DEPLOYMENT COMMANDS
 - `npx next build` — local build

@@ -22,9 +22,8 @@
 - SMTP configured: Gmail App Password, `SMTP_USER=nancyberrykdy@gmail.com`, emails to both nancyberrykdy + dynamicmike+fifeart
 - Added PWA support: manifest.json, icons (192/512), service worker, theme meta
 
-## PENDING / NEXT
-- [x] Image upload + reorder — both confirmed working
-- [x] Gmail SMTP configured — App Password, `SMTP_USER=nancyberrykdy@gmail.com`, sending to both addresses
+## STATUS
+All items complete. Site is fully functional at https://fifeart.com (also www.fifeart.com).
 - [ ] Add `www.fifeart.com` domain in Vercel Dashboard → Domains
 - [ ] Add proper metadata/titles for all 60 paintings via /admin
 - [ ] Consider replacing about table (`tblG1JCrNBFlRslVa4J`) with properly named table
