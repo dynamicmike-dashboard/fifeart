@@ -77,8 +77,7 @@ export default async function ArtworkPage({ params }: Props) {
       ) : null}
 
       <p className="artwork-note">
-        Available in the UK only. Please{" "}
-        <a href="mailto:nancyberrykdy@gmail.com">email Nancy</a> to enquire or purchase.
+        Available in the UK only. Use the <a href="/">Enquiries</a> button on our homepage to get in touch.
       </p>
 
       <ShareButtons title={art.fields.title} url={id} />

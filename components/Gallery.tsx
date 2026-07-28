@@ -5,12 +5,14 @@ import Image from "next/image";
 import { PaintingRecord } from "@/lib/types";
 import { getThumbUrl, getFullImageUrl, getStatusDisplay, sortByOrder } from "@/lib/utils";
 import CommissionModal from "./CommissionModal";
+import EnquiryModal from "./EnquiryModal";
 
 export default function Gallery({ paintings: all }: { paintings: PaintingRecord[] }) {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [lightbox, setLightbox] = useState<PaintingRecord | null>(null);
   const [showCommission, setShowCommission] = useState(false);
+  const [showEnquiry, setShowEnquiry] = useState(false);
 
   const subjects = useMemo(() => {
     const s = new Set<string>();
@@ -42,6 +44,7 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
           <p>Original paintings by Nancy Berry — available in the UK</p>
           <div className="header-links">
             <button className="header-link" onClick={() => setShowCommission(true)}>Commission</button>
+            <button className="header-link" onClick={() => setShowEnquiry(true)}>Enquiries</button>
           </div>
         </div>
       </header>
@@ -122,9 +125,9 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
                 <p className="lb-price">This artwork is not for sale.</p>
               )}
               <p className="lb-note">
-                Available in the UK only. Please{" "}
-                <a href="mailto:nancyberrykdy@gmail.com">email</a> to enquire or purchase.
+                Available in the UK only.
               </p>
+              <button className="lb-enquire" onClick={() => setShowEnquiry(true)}>Enquire About This Painting</button>
               <button className="lb-close" onClick={() => setLightbox(null)}>Close</button>
             </div>
           </div>
@@ -132,6 +135,7 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
       )}
 
       {showCommission && <CommissionModal onClose={() => setShowCommission(false)} />}
+      {showEnquiry && <EnquiryModal onClose={() => setShowEnquiry(false)} />}
     </>
   );
 }

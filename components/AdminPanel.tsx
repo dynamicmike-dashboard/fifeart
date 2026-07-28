@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { PaintingRecord, SUBJECT_OPTIONS, STATUS_OPTIONS, ORIENTATION_OPTIONS } from "@/lib/types";
 import { getThumbUrl, getStatusDisplay } from "@/lib/utils";
 
@@ -161,20 +161,42 @@ export default function AdminPanel() {
 
   const sorted = [...paintings].sort((a, b) => (a.fields.order ?? 999) - (b.fields.order ?? 999));
 
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
   function photoField(
     preview: string,
     currentUrl: string | undefined,
     setFile: (f: File | null) => void,
-    setPreview: (s: string) => void
+    setPreview: (s: string) => void,
+    prefix: string
   ) {
+    const trigger = (key: string) => fileInputRefs.current[`${prefix}_${key}`]?.click();
+    const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+      handleFileSelect(e.target.files?.[0] || null, setFile, setPreview);
+
     return (
       <div className="full">
         <label>Photo</label>
-        <input
-          type="file" accept="image/*"
-          onChange={(e) => handleFileSelect(e.target.files?.[0] || null, setFile, setPreview)}
-          style={{ fontSize: "0.85rem" }}
-        />
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <button type="button" className="photo-btn" onClick={() => trigger("camera")}>
+            Take Photo
+          </button>
+          <button type="button" className="photo-btn" onClick={() => trigger("gallery")}>
+            Choose from Gallery
+          </button>
+          <button type="button" className="photo-btn" onClick={() => trigger("files")}>
+            Browse Files
+          </button>
+        </div>
+        <input type="file" accept="image/*" capture="environment"
+          ref={(el) => { fileInputRefs.current[`${prefix}_camera`] = el; }}
+          onChange={onChange} style={{ display: "none" }} />
+        <input type="file" accept="image/*"
+          ref={(el) => { fileInputRefs.current[`${prefix}_gallery`] = el; }}
+          onChange={onChange} style={{ display: "none" }} />
+        <input type="file" accept="image/*,.heic,.heif,.png,.jpg,.jpeg,.webp"
+          ref={(el) => { fileInputRefs.current[`${prefix}_files`] = el; }}
+          onChange={onChange} style={{ display: "none" }} />
         <div style={{ marginTop: "0.5rem" }}>
           {preview ? (
             <img src={preview} alt="" style={{ maxWidth: "200px", maxHeight: "150px", borderRadius: "0.35rem", border: "1px solid #e7e5e4" }} />
@@ -274,7 +296,7 @@ export default function AdminPanel() {
                 ))}
               </div>
             </div>
-            {photoField(addImagePreview, undefined, setAddImage, setAddImagePreview)}
+            {photoField(addImagePreview, undefined, setAddImage, setAddImagePreview, "add")}
           </div>
           <div className="form-actions">
             <button className="primary" onClick={saveNew} disabled={saving}>{saving ? "Saving..." : "Save"}</button>
@@ -336,7 +358,7 @@ export default function AdminPanel() {
                       ))}
                     </div>
                   </div>
-                  {photoField(editImagePreview, getThumbUrl(art), setEditImage, setEditImagePreview)}
+                  {photoField(editImagePreview, getThumbUrl(art), setEditImage, setEditImagePreview, "edit")}
                 </div>
                 <div className="form-actions">
                   <button className="primary" onClick={() => saveEdit(art.id)} disabled={saving}>{saving ? "Saving..." : "Save"}</button>
