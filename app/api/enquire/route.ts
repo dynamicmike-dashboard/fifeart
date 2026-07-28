@@ -33,10 +33,11 @@ export async function POST(request: Request) {
         secure: false,
         auth: { user: SMTP_USER, pass: SMTP_PASS },
       });
+      const recipients = CONTACT_EMAIL.split(",").map((s: string) => s.trim()).filter(Boolean).join(", ");
       await transporter.sendMail({
         from: `"FifeArt Website" <${SMTP_USER}>`,
         replyTo: email,
-        to: CONTACT_EMAIL,
+        to: recipients,
         subject,
         text: body,
       });

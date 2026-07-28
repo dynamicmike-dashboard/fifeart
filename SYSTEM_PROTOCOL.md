@@ -9,7 +9,7 @@
 - **CMS:** Teable (Airtable-compatible REST API) — headless
 - **Hosting:** Vercel (production at https://fifeart.com)
 - **Image:** next/image with WebP format, sharp for upload conversion
-- **Email:** nodemailer + Gmail SMTP (not yet configured)
+- **Email:** nodemailer + Gmail SMTP (configured — App Password for `nancyberrykdy@gmail.com`)
 - **Auth:** Cookie-based admin session (`admin_session`)
 
 ## KEY ENV VARS (Vercel project: dynamicmikes-projects/fifeart)
@@ -39,7 +39,7 @@ Single record for About the Artist page
 ## KNOWN BUGS (not yet fixed)
 1. Image upload — record-level endpoint works but images may not display (check `{ id }` reference format vs full object)
 2. Reorder (up/down arrows) — batch PATCH returns ok but order may not persist
-3. Gmail SMTP not configured — `SMTP_PASS` needs App Password, `EMAIL_ENABLED=true`
+3. (Resolved) Gmail SMTP — App Password configured, `SMTP_USER=nancyberrykdy@gmail.com`, emails to both nancyberrykdy + dynamicmike+fifeart
 4. `www.fifeart.com` DNS points to Vercel but domain not added in Vercel Dashboard → Domains
 
 ## DEPLOYMENT COMMANDS
