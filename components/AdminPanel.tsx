@@ -80,7 +80,7 @@ export default function AdminPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fields }),
       });
-      if (!res.ok) { alert("Save failed"); return; }
+      if (!res.ok) { const e = await res.json(); alert("Save failed: " + (e.error || "unknown")); return; }
       setShowAdd(false);
       setAddFields(emptyFields());
       setAddImage(null);
@@ -108,7 +108,7 @@ export default function AdminPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, fields }),
       });
-      if (!res.ok) { alert("Save failed"); return; }
+      if (!res.ok) { const e = await res.json(); alert("Save failed: " + (e.error || "unknown")); return; }
       setEditingId(null);
       setEditFields(emptyFields());
       setEditImage(null);
@@ -140,7 +140,7 @@ export default function AdminPanel() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ updates: arr.map((a) => ({ id: a.id, order: a.fields.order })) }),
     });
-    if (!res.ok) { alert("Reorder failed"); return; }
+    if (!res.ok) { const e = await res.json(); alert("Reorder: " + (e.error || "failed")); return; }
     await load();
   }
 
@@ -155,7 +155,7 @@ export default function AdminPanel() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ updates: arr.map((a) => ({ id: a.id, order: a.fields.order })) }),
     });
-    if (!res.ok) { alert("Reorder failed"); return; }
+    if (!res.ok) { const e = await res.json(); alert("Reorder: " + (e.error || "failed")); return; }
     await load();
   }
 
@@ -239,15 +239,7 @@ export default function AdminPanel() {
 
       <div className="toolbar">
         <button className="primary" onClick={() => setShowAdd(!showAdd)}>+ Add Artwork</button>
-        <button onClick={async () => {
-          const arr = [...paintings].sort((a, b) => (a.fields.order ?? 999) - (b.fields.order ?? 999));
-          const updates = arr.map((a, i) => ({ id: a.id, order: i + 1 }));
-          await fetch("/api/paintings/reorder", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ updates }),
-          });
-          await load();
-        }}>Renumber Order</button>
+
       </div>
 
       {showAdd && (

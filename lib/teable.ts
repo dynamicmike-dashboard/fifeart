@@ -87,7 +87,7 @@ export async function updateOrder(updates: { id: string; order: number }[]): Pro
     id: u.id,
     fields: { order: u.order },
   }));
-  await fetch(
+  const res = await fetch(
     `${BASE_URL}/api/table/${TABLE_ID}/record?fieldKeyType=name`,
     {
       method: "PATCH",
@@ -95,4 +95,8 @@ export async function updateOrder(updates: { id: string; order: number }[]): Pro
       body: JSON.stringify({ records }),
     }
   );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Teable reorder PATCH ${res.status}: ${text}`);
+  }
 }
