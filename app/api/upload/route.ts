@@ -39,15 +39,80 @@ export async function POST(request: Request) {
     console.log("Origin:", request.headers.get("origin"));
     console.log("Cookie header:", request.headers.get("cookie")?.substring(0, 200));
     
-    // TEST: return immediate JSON to verify route works
-    return jsonResponse({ 
-      test: "ok", 
-      timestamp: new Date().toISOString(), 
-      method: request.method, 
-      url: request.url,
-      hasContentLength: !!request.headers.get("content-length"),
-      hasCookie: !!request.headers.get("cookie")
-    }, 200, request);
+    console.log("=== UPLOAD ROUTE START ===");
+    console.log("Request headers:", Object.fromEntries(request.headers.entries()));
+    console.log("Request origin:", request.headers.get("origin"));
+    
+    const c = await cookies();
+    console.log("Cookies() call succeeded");
+    const allCookies = c.getAll();
+    console.log("All cookies:", allCookies);
+    
+    const cookieValue = c.get("admin_session")?.value;
+    console.log("Upload auth check - cookie:", cookieValue);
+    if (cookieValue !== "true") {
+      console.log("Upload auth failed - cookie value:", cookieValue);
+      return jsonResponse({ error: "Unauthorized", debug: { cookie: cookieValue, allCookies } }, 401, request);
+    }
+    if (!BASE_URL || !TABLE_ID || !TOKEN) {
+      console.log("Missing env vars:", { BASE_URL: !!BASE_URL, TABLE_ID: !!TABLE_ID, TOKEN: !!TOKEN });
+      return jsonResponse({ error: "Not configured" }, 500, request);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const recordId = searchParams.get("recordId");
+    if (!recordId) {
+      return jsonResponse({ error: "Missing recordId" }, 400, request);
+    }
+
+    console.log("Parsing formData...");
+    const formData = await request.formData();
+    console.log("formData parsed, entries:", Array.from(formData.entries()).map(([k, v]) => [k, typeof v === 'object' ? v.constructor.name : v]));
+    const file = formData.get("file") as File | null;
+    if (!file) {
+      console.log("No file in formData");
+      return jsonResponse({ error: "No file" }, 400, request);
+    }
+    console.log("File:", file.name, file.type, file.size);
+
+    console.log("Reading file arrayBuffer...");
+    const buf = Buffer.from(await file.arrayBuffer());
+    console.log("Buffer length:", buf.length);
+
+    console.log("Processing with sharp...");
+    let webpBuf: Buffer;
+    try {
+      webpBuf = await sharp(buf).webp({ quality: 82 }).toBuffer();
+    } catch (sharpErr: any) {
+      console.error("SHARP ERROR:", sharpErr);
+      console.error("SHARP STACK:", sharpErr.stack);
+      return jsonResponse({ error: "Image processing failed", detail: sharpErr.message, stack: sharpErr.stack }, 500, request);
+    }
+    console.log("Sharp done, webpBuf length:", webpBuf.length);
+    
+    const filename = file.name.replace(/\.[^.]+$/, "") + ".webp";
+
+    const teableForm = new FormData();
+    teableForm.append("file", new Blob([webpBuf as unknown as ArrayBuffer], { type: "image/webp" }), filename);
+
+    const url = `${BASE_URL}/api/table/${TABLE_ID}/record/${recordId}/${IMAGE_FIELD_ID}/uploadAttachment`;
+    console.log("Posting to Teable:", url);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TOKEN}` },
+      body: teableForm,
+    });
+
+    console.log("Teable response status:", res.status);
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Teable upload error", res.status, text);
+      return jsonResponse({ error: "Upload failed", detail: text, teableStatus: res.status }, 502, request);
+    }
+
+    const data = await res.json();
+    console.log("Teable response data:", data);
+    return jsonResponse(data, 200, request);
   } catch (err: any) {
     console.error("Upload route error:", err);
     console.error("Stack:", err.stack);
