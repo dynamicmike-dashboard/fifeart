@@ -93,7 +93,7 @@ export default function AdminPanel() {
         const fd = new FormData();
         fd.append("file", addImage);
         const ur = await fetch(`/api/upload?recordId=${record.id}`, { method: "POST", body: fd, credentials: "include" });
-        if (!ur.ok) { const e = await ur.json(); alert("Image upload failed: " + (e.detail || e.error)); return; }
+        if (!ur.ok) { const text = await ur.text(); let e; try { e = JSON.parse(text); } catch { e = { error: text.slice(0, 200) }; } alert("Image upload failed: " + (e.detail || e.error || "server error")); return; }
       }
       setShowAdd(false);
       setAddFields(emptyFields());
@@ -128,7 +128,7 @@ export default function AdminPanel() {
         const fd = new FormData();
         fd.append("file", editImage);
         const ur = await fetch(`/api/upload?recordId=${id}`, { method: "POST", body: fd, credentials: "include" });
-        if (!ur.ok) { const e = await ur.json(); alert("Image upload failed: " + (e.detail || e.error)); return; }
+        if (!ur.ok) { const text = await ur.text(); let e; try { e = JSON.parse(text); } catch { e = { error: text.slice(0, 200) }; } alert("Image upload failed: " + (e.detail || e.error || "server error")); return; }
       }
       setEditingId(null);
       setEditFields(emptyFields());
@@ -288,7 +288,7 @@ export default function AdminPanel() {
                   const fd = new FormData();
                   fd.append("file", aboutImage);
                   const r = await fetch(`/api/upload?recordId=${aboutId || ""}`, { method: "POST", body: fd, credentials: "include" });
-                  if (!r.ok) { const e = await r.json(); alert("Image upload: " + (e.detail || e.error)); return; }
+                  if (!r.ok) { const text = await r.text(); let e; try { e = JSON.parse(text); } catch { e = { error: text.slice(0, 200) }; } alert("Image upload: " + (e.detail || e.error || "server error")); return; }
                 }
                 const res = await fetch("/api/about", {
                   method: "POST",
@@ -304,7 +304,7 @@ export default function AdminPanel() {
                   const bid = saved.id || saved.records?.[0]?.id;
                   if (!aboutId) {
                     const r2 = await fetch(`/api/upload?recordId=${bid}`, { method: "POST", body: fd, credentials: "include" });
-                    if (!r2.ok) { const e = await r2.json(); alert("Image upload: " + (e.detail || e.error)); return; }
+                    if (!r2.ok) { const text = await r2.text(); let e; try { e = JSON.parse(text); } catch { e = { error: text.slice(0, 200) }; } alert("Image upload: " + (e.detail || e.error || "server error")); return; }
                   }
                 }
                 alert("About page saved!");
