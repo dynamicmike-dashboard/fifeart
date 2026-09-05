@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       { protocol: "https", hostname: "s3.us-west-2.amazonaws.com" },
+      { protocol: "https", hostname: "app.teable.ai" },
+      { protocol: "https", hostname: "*.teable.ai" },
     ],
   },
 };
