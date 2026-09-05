@@ -92,7 +92,7 @@ export default function AdminPanel() {
       if (addImage && record?.id) {
         const fd = new FormData();
         fd.append("file", addImage);
-        const ur = await fetch(`/api/upload?recordId=${record.id}`, { method: "POST", body: fd });
+        const ur = await fetch(`/api/upload?recordId=${record.id}`, { method: "POST", body: fd, credentials: "include" });
         if (!ur.ok) { const e = await ur.json(); alert("Image upload failed: " + (e.detail || e.error)); return; }
       }
       setShowAdd(false);
@@ -127,7 +127,7 @@ export default function AdminPanel() {
         });
         const fd = new FormData();
         fd.append("file", editImage);
-        const ur = await fetch(`/api/upload?recordId=${id}`, { method: "POST", body: fd });
+        const ur = await fetch(`/api/upload?recordId=${id}`, { method: "POST", body: fd, credentials: "include" });
         if (!ur.ok) { const e = await ur.json(); alert("Image upload failed: " + (e.detail || e.error)); return; }
       }
       setEditingId(null);
@@ -287,7 +287,7 @@ export default function AdminPanel() {
                 if (aboutImage) {
                   const fd = new FormData();
                   fd.append("file", aboutImage);
-                  const r = await fetch(`/api/upload?recordId=${aboutId || ""}`, { method: "POST", body: fd });
+                  const r = await fetch(`/api/upload?recordId=${aboutId || ""}`, { method: "POST", body: fd, credentials: "include" });
                   if (!r.ok) { const e = await r.json(); alert("Image upload: " + (e.detail || e.error)); return; }
                 }
                 const res = await fetch("/api/about", {
@@ -303,7 +303,7 @@ export default function AdminPanel() {
                   fd.append("file", aboutImage);
                   const bid = saved.id || saved.records?.[0]?.id;
                   if (!aboutId) {
-                    const r2 = await fetch(`/api/upload?recordId=${bid}`, { method: "POST", body: fd });
+                    const r2 = await fetch(`/api/upload?recordId=${bid}`, { method: "POST", body: fd, credentials: "include" });
                     if (!r2.ok) { const e = await r2.json(); alert("Image upload: " + (e.detail || e.error)); return; }
                   }
                 }

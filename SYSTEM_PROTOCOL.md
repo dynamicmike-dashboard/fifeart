@@ -50,6 +50,7 @@ Single record for About the Artist page
 
 ## CONVENTIONS
 - Field names use `fieldKeyType=name` in all Teable API calls
+- **SCOPE RESTRICTION**: Only operate within `F:\Mike d drive\Mike Webs\mAIstermind.com\projects\FifeArt website 26jul26\fifeart-github`. Do NOT create repos, write outside this folder, or use browser automation without explicit approval.
 - Upload uses record-level endpoint: `POST /api/table/{tableId}/record/{recordId}/{fieldId}/uploadAttachment`
 - Image reference: `{ id: uploadResponse.id }` (not token, not full object)
 - All pages dynamic (`force-dynamic` or `cache: "no-store"`) to avoid stale presigned URLs
