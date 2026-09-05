@@ -29,16 +29,19 @@ function jsonResponse(data: any, status: number, request: Request): Response {
 }
 
 export async function POST(request: Request) {
-  // IMMEDIATE SYNC LOG - before any await
-  console.log("UPLOAD POST handler ENTERED", new Date().toISOString());
-  console.log("Request method:", request.method);
-  console.log("Request url:", request.url);
-  console.log("Content-Type:", request.headers.get("content-type"));
-  console.log("Content-Length:", request.headers.get("content-length"));
-  console.log("Origin:", request.headers.get("origin"));
-  console.log("Cookie header:", request.headers.get("cookie")?.substring(0, 200));
-  
   try {
+    // IMMEDIATE SYNC LOG - before any await
+    console.log("UPLOAD POST handler ENTERED", new Date().toISOString());
+    console.log("Request method:", request.method);
+    console.log("Request url:", request.url);
+    console.log("Content-Type:", request.headers.get("content-type"));
+    console.log("Content-Length:", request.headers.get("content-length"));
+    console.log("Origin:", request.headers.get("origin"));
+    console.log("Cookie header:", request.headers.get("cookie")?.substring(0, 200));
+    
+    // TEST: return immediate JSON to verify route works
+    // return jsonResponse({ test: "ok", timestamp: new Date().toISOString() }, 200, request);
+    
     console.log("=== UPLOAD ROUTE START ===");
     console.log("Request headers:", Object.fromEntries(request.headers.entries()));
     console.log("Request origin:", request.headers.get("origin"));
@@ -116,7 +119,11 @@ export async function POST(request: Request) {
   } catch (err: any) {
     console.error("Upload route error:", err);
     console.error("Stack:", err.stack);
-    return jsonResponse({ error: "Server error", detail: err.message, stack: err.stack }, 500, request);
+    // Use plain Response.json to avoid any issues with corsHeaders
+    return new Response(JSON.stringify({ error: "Server error", detail: err?.message, stack: err?.stack }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders(request) },
+    });
   }
 }
 
