@@ -1,10 +1,21 @@
-import sharp from "sharp";
 import { cookies } from "next/headers";
 
 const BASE_URL = process.env.TEABLE_API_URL;
 const TABLE_ID = process.env.TEABLE_TABLE_ID;
 const TOKEN = process.env.TEABLE_API_TOKEN;
 const IMAGE_FIELD_ID = "fld3Qxe2JyFvjD5x42U";
+
+// Check sharp availability at module load
+let sharpAvailable = false;
+let sharpImportError: string | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require("sharp");
+  sharpAvailable = true;
+} catch (e: any) {
+  sharpImportError = e?.message || "sharp not available";
+  console.error("SHARP MODULE LOAD FAILED:", sharpImportError);
+}
 
 function corsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin");
@@ -39,6 +50,15 @@ export async function POST(request: Request) {
     console.log("Origin:", request.headers.get("origin"));
     console.log("Cookie header:", request.headers.get("cookie")?.substring(0, 200));
     
+    // Check sharp availability
+    if (!sharpAvailable) {
+      console.error("Sharp not available, cannot process images");
+      return jsonResponse({ error: "Image processing unavailable", detail: sharpImportError }, 500, request);
+    }
+    
+    // Dynamic import sharp after check
+    const sharp = (await import("sharp")).default;
+    
     console.log("=== UPLOAD ROUTE START ===");
     console.log("Request headers:", Object.fromEntries(request.headers.entries()));
     console.log("Request origin:", request.headers.get("origin"));
@@ -56,7 +76,7 @@ export async function POST(request: Request) {
     }
     if (!BASE_URL || !TABLE_ID || !TOKEN) {
       console.log("Missing env vars:", { BASE_URL: !!BASE_URL, TABLE_ID: !!TABLE_ID, TOKEN: !!TOKEN });
-      return jsonResponse({ error: "Not configured" }, 500, request);
+      return jsonResponse({ error: "Not configured - check Vercel env vars" }, 500, request);
     }
 
     const { searchParams } = new URL(request.url);
