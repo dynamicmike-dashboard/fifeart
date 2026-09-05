@@ -9,7 +9,7 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/check").then((r) => {
+    fetch("/api/admin/check", { credentials: "include" }).then((r) => {
       if (r.ok) setLoggedIn(true);
       setChecking(false);
     });
