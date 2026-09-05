@@ -86,6 +86,7 @@ export default function AdminPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fields }),
+        credentials: "include",
       });
       if (!res.ok) { const e = await res.json(); alert("Save failed: " + (e.error || "unknown")); return; }
       const record = await res.json();
@@ -117,6 +118,7 @@ export default function AdminPanel() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, fields }),
+        credentials: "include",
       });
       if (!res.ok) { const e = await res.json(); alert("Save failed: " + (e.error || "unknown")); return; }
       if (editImage) {
@@ -124,6 +126,7 @@ export default function AdminPanel() {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id, fields: { image: [] } }),
+          credentials: "include",
         });
         const fd = new FormData();
         fd.append("file", editImage);
@@ -148,6 +151,7 @@ export default function AdminPanel() {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
+      credentials: "include",
     });
     await load();
   }
@@ -162,6 +166,7 @@ export default function AdminPanel() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ updates: arr.map((a) => ({ id: a.id, order: a.fields.order })) }),
+      credentials: "include",
     });
     if (!res.ok) { const e = await res.json(); alert("Reorder: " + (e.error || "failed")); return; }
     await load();
@@ -177,6 +182,7 @@ export default function AdminPanel() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ updates: arr.map((a) => ({ id: a.id, order: a.fields.order })) }),
+      credentials: "include",
     });
     if (!res.ok) { const e = await res.json(); alert("Reorder: " + (e.error || "failed")); return; }
     await load();
@@ -294,6 +300,7 @@ export default function AdminPanel() {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ id: aboutId, fields: { title: aboutTitle, story: aboutStory } }),
+                  credentials: "include",
                 });
                 if (!res.ok) { const e = await res.json(); alert("Save failed: " + e.error); return; }
                 const saved = await res.json();
