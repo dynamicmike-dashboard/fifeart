@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     c.set("admin_session", "true", {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
       path: "/",
       maxAge: 60 * 60 * 4,
     });

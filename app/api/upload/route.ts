@@ -8,12 +8,18 @@ const IMAGE_FIELD_ID = "fld3Qxe2JyFvjD5x42U";
 
 export async function POST(request: Request) {
   try {
+    console.log("=== UPLOAD ROUTE START ===");
+    console.log("Request headers:", Object.fromEntries(request.headers.entries()));
+    
     const c = await cookies();
+    const allCookies = c.getAll();
+    console.log("All cookies:", allCookies);
+    
     const cookieValue = c.get("admin_session")?.value;
     console.log("Upload auth check - cookie:", cookieValue);
     if (cookieValue !== "true") {
       console.log("Upload auth failed - cookie value:", cookieValue);
-      return Response.json({ error: "Unauthorized", debug: { cookie: cookieValue } }, { status: 401 });
+      return Response.json({ error: "Unauthorized", debug: { cookie: cookieValue, allCookies } }, { status: 401 });
     }
     if (!BASE_URL || !TABLE_ID || !TOKEN) {
       return Response.json({ error: "Not configured" }, { status: 500 });
@@ -55,6 +61,7 @@ export async function POST(request: Request) {
     return Response.json(data);
   } catch (err: any) {
     console.error("Upload route error:", err);
-    return Response.json({ error: "Server error", detail: err.message }, { status: 500 });
+    console.error("Stack:", err.stack);
+    return Response.json({ error: "Server error", detail: err.message, stack: err.stack }, { status: 500 });
   }
 }
