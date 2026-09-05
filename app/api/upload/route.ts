@@ -8,8 +8,11 @@ const IMAGE_FIELD_ID = "fld3Qxe2JyFvjD5x42U";
 
 export async function POST(request: Request) {
   const c = await cookies();
-  if (c.get("admin_session")?.value !== "true") {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const cookieValue = c.get("admin_session")?.value;
+  console.log("Upload auth check - cookie:", cookieValue);
+  if (cookieValue !== "true") {
+    console.log("Upload auth failed - cookie value:", cookieValue);
+    return Response.json({ error: "Unauthorized", debug: { cookie: cookieValue } }, { status: 401 });
   }
   if (!BASE_URL || !TABLE_ID || !TOKEN) {
     return Response.json({ error: "Not configured" }, { status: 500 });
