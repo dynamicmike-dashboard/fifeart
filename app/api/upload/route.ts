@@ -41,15 +41,6 @@ export async function POST(request: Request) {
     console.log("Origin:", request.headers.get("origin"));
     console.log("Cookie header:", request.headers.get("cookie")?.substring(0, 200));
     
-    let sharp: any;
-    try {
-      sharp = (await import("sharp")).default;
-      console.log("Sharp imported OK");
-    } catch (e: any) {
-      console.error("SHARP IMPORT FAILED:", e?.message, e?.stack);
-      return jsonResponse({ error: "Image processing unavailable", detail: e?.message }, 500, request);
-    }
-    
     console.log("=== UPLOAD ROUTE START ===");
     console.log("Request headers:", Object.fromEntries(request.headers.entries()));
     console.log("Request origin:", request.headers.get("origin"));
@@ -85,8 +76,33 @@ export async function POST(request: Request) {
       return jsonResponse({ error: "No file" }, 400, request);
     }
     console.log("File:", file.name, file.type, file.size);
-    // BISECT TEST: return early without sharp/Teable
-    return jsonResponse({ bisect: "formData ok", filename: file.name, size: file.size, type: file.type, recordId }, 200, request);
+
+    console.log("Reading file arrayBuffer (no sharp)...");
+    const buf = Buffer.from(await file.arrayBuffer());
+    console.log("Buffer length:", buf.length);
+
+    const filename = file.name;
+    const teableForm = new FormData();
+    teableForm.append("file", new Blob([buf as unknown as ArrayBuffer], { type: file.type || "image/jpeg" }), filename);
+
+    const url = `${BASE_URL}/api/table/${TABLE_ID}/record/${recordId}/${IMAGE_FIELD_ID}/uploadAttachment`;
+    console.log("Posting to Teable (original, no webp):", url);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TOKEN}` },
+      body: teableForm,
+    });
+
+    console.log("Teable response status:", res.status);
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Teable upload error", res.status, text);
+      return jsonResponse({ error: "Upload failed", detail: text, teableStatus: res.status }, 502, request);
+    }
+
+    const data = await res.json();
+    console.log("Teable response data:", data);
+    return jsonResponse(data, 200, request);
   } catch (err: any) {
     console.error("Upload route error:", err);
     console.error("Stack:", err.stack);
