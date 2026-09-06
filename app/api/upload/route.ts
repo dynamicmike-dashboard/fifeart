@@ -85,45 +85,8 @@ export async function POST(request: Request) {
       return jsonResponse({ error: "No file" }, 400, request);
     }
     console.log("File:", file.name, file.type, file.size);
-
-    console.log("Reading file arrayBuffer...");
-    const buf = Buffer.from(await file.arrayBuffer());
-    console.log("Buffer length:", buf.length);
-
-    console.log("Processing with sharp...");
-    let webpBuf: Buffer;
-    try {
-      webpBuf = await sharp(buf).webp({ quality: 82 }).toBuffer();
-    } catch (sharpErr: any) {
-      console.error("SHARP ERROR:", sharpErr);
-      console.error("SHARP STACK:", sharpErr.stack);
-      return jsonResponse({ error: "Image processing failed", detail: sharpErr.message, stack: sharpErr.stack }, 500, request);
-    }
-    console.log("Sharp done, webpBuf length:", webpBuf.length);
-    
-    const filename = file.name.replace(/\.[^.]+$/, "") + ".webp";
-
-    const teableForm = new FormData();
-    teableForm.append("file", new Blob([webpBuf as unknown as ArrayBuffer], { type: "image/webp" }), filename);
-
-    const url = `${BASE_URL}/api/table/${TABLE_ID}/record/${recordId}/${IMAGE_FIELD_ID}/uploadAttachment`;
-    console.log("Posting to Teable:", url);
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${TOKEN}` },
-      body: teableForm,
-    });
-
-    console.log("Teable response status:", res.status);
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("Teable upload error", res.status, text);
-      return jsonResponse({ error: "Upload failed", detail: text, teableStatus: res.status }, 502, request);
-    }
-
-    const data = await res.json();
-    console.log("Teable response data:", data);
-    return jsonResponse(data, 200, request);
+    // BISECT TEST: return early without sharp/Teable
+    return jsonResponse({ bisect: "formData ok", filename: file.name, size: file.size, type: file.type, recordId }, 200, request);
   } catch (err: any) {
     console.error("Upload route error:", err);
     console.error("Stack:", err.stack);
