@@ -17,19 +17,23 @@ export async function getPaintings(): Promise<PaintingRecord[]> {
   if (!isConfigured()) return [];
   try {
     const all: PaintingRecord[] = [];
-    let cursor: string | undefined;
+    const seen = new Set<string>();
+    const take = 200;
+    let skip = 0;
     for (let page = 0; page < 20; page++) {
       const u = new URL(`${BASE_URL}/api/table/${TABLE_ID}/record`);
       u.searchParams.set("fieldKeyType", "name");
-      u.searchParams.set("take", "200");
-      if (cursor) u.searchParams.set("nextCursor", cursor);
+      u.searchParams.set("take", String(take));
+      u.searchParams.set("skip", String(skip));
       const res = await fetch(u.toString(), { headers: authHeaders(), cache: "no-store" });
       if (!res.ok) break;
       const data = await res.json();
       const recs = (data.records || []) as PaintingRecord[];
-      all.push(...recs);
-      cursor = data.extra?.nextCursor;
-      if (!cursor || recs.length === 0) break;
+      recs.forEach((r) => {
+        if (!seen.has(r.id)) { seen.add(r.id); all.push(r); }
+      });
+      if (recs.length < take) break;
+      skip += take;
     }
     return all;
   } catch {
