@@ -16,13 +16,22 @@ function isConfigured(): boolean {
 export async function getPaintings(): Promise<PaintingRecord[]> {
   if (!isConfigured()) return [];
   try {
-    const res = await fetch(
-      `${BASE_URL}/api/table/${TABLE_ID}/record?fieldKeyType=name&limit=200`,
-      { headers: authHeaders(), cache: "no-store" }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.records || []) as PaintingRecord[];
+    const all: PaintingRecord[] = [];
+    let cursor: string | undefined;
+    for (let page = 0; page < 20; page++) {
+      const u = new URL(`${BASE_URL}/api/table/${TABLE_ID}/record`);
+      u.searchParams.set("fieldKeyType", "name");
+      u.searchParams.set("take", "200");
+      if (cursor) u.searchParams.set("nextCursor", cursor);
+      const res = await fetch(u.toString(), { headers: authHeaders(), cache: "no-store" });
+      if (!res.ok) break;
+      const data = await res.json();
+      const recs = (data.records || []) as PaintingRecord[];
+      all.push(...recs);
+      cursor = data.extra?.nextCursor;
+      if (!cursor || recs.length === 0) break;
+    }
+    return all;
   } catch {
     return [];
   }
