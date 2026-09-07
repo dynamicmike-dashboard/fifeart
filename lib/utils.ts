@@ -1,14 +1,22 @@
 import { PaintingRecord } from "./types";
 
 function proxyUrl(img: any): string {
-  if (!img?.token || !img?.path) return "";
-  const p = new URLSearchParams({
-    token: img.token,
-    path: img.path,
-    name: img.name || "image.webp",
-    mimetype: img.mimetype || "image/webp",
-  });
-  return `/api/image?${p.toString()}`;
+  // 1. Preferred: Teable sign-attachment-urls (requires token + path)
+  if (img?.token && img?.path) {
+    const p = new URLSearchParams({
+      token: img.token,
+      path: img.path,
+      name: img.name || "image.webp",
+      mimetype: img.mimetype || "image/webp",
+    });
+    return `/api/image?${p.toString()}`;
+  }
+  // 2. Fallback: legacy proxy with presigned URL (lgThumbnailUrl, presignedUrl, smThumbnailUrl)
+  const fallback = img?.lgThumbnailUrl || img?.presignedUrl || img?.smThumbnailUrl;
+  if (fallback) {
+    return `/api/image?url=${encodeURIComponent(fallback)}`;
+  }
+  return "";
 }
 
 export function getThumbUrl(painting: PaintingRecord): string {
