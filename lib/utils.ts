@@ -1,20 +1,24 @@
 import { PaintingRecord } from "./types";
 
-function proxyUrl(src: string): string {
-  if (!src) return "";
-  return `/api/image?url=${encodeURIComponent(src)}`;
+function proxyUrl(img: any): string {
+  if (!img?.token || !img?.path) return "";
+  const p = new URLSearchParams({
+    token: img.token,
+    path: img.path,
+    name: img.name || "image.webp",
+    mimetype: img.mimetype || "image/webp",
+  });
+  return `/api/image?${p.toString()}`;
 }
 
 export function getThumbUrl(painting: PaintingRecord): string {
   const img = painting.fields.image?.[0];
-  const raw = img?.lgThumbnailUrl || img?.smThumbnailUrl || img?.presignedUrl || "";
-  return proxyUrl(raw);
+  return proxyUrl(img);
 }
 
 export function getFullImageUrl(painting: PaintingRecord): string {
   const img = painting.fields.image?.[0];
-  const raw = img?.presignedUrl || img?.lgThumbnailUrl || "";
-  return proxyUrl(raw);
+  return proxyUrl(img);
 }
 
 export function getImageProps(painting: PaintingRecord): {
