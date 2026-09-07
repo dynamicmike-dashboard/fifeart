@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import { PaintingRecord } from "@/lib/types";
 import { getThumbUrl, getFullImageUrl, getStatusDisplay, sortByOrder } from "@/lib/utils";
 import CommissionModal from "./CommissionModal";
 import EnquiryModal from "./EnquiryModal";
+
+const IMAGES_PER_PAGE = 20;
 
 export default function Gallery({ paintings: all }: { paintings: PaintingRecord[] }) {
   const [filter, setFilter] = useState("all");
@@ -13,6 +15,7 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
   const [lightbox, setLightbox] = useState<PaintingRecord | null>(null);
   const [showCommission, setShowCommission] = useState(false);
   const [showEnquiry, setShowEnquiry] = useState(false);
+  const [page, setPage] = useState(1);
 
   const subjects = useMemo(() => {
     const s = new Set<string>();
@@ -20,8 +23,17 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
     return Array.from(s).sort();
   }, [all]);
 
+  const sortedAll = useMemo(() => {
+    return [...all].sort((a, b) => {
+      const timeA = new Date(a.createdTime || 0).getTime();
+      const timeB = new Date(b.createdTime || 0).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+      return (a.fields.order ?? 999) - (b.fields.order ?? 999);
+    });
+  }, [all]);
+
   const filtered = useMemo(() => {
-    let list = all;
+    let list = sortedAll;
     if (filter !== "all") {
       list = list.filter((a) => (a.fields.subjects || []).includes(filter));
     }
@@ -33,8 +45,24 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
         return title.includes(t) || tags.includes(t);
       });
     }
-    return sortByOrder(list);
-  }, [all, filter, search]);
+    return list;
+  }, [sortedAll, filter, search]);
+
+  const paginated = useMemo(() => {
+    const start = 0;
+    const end = page * IMAGES_PER_PAGE;
+    return filtered.slice(start, end);
+  }, [filtered, page]);
+
+  const hasMore = paginated.length < filtered.length;
+
+  const loadMore = useCallback(() => {
+    setPage((p) => p + 1);
+  }, []);
+
+  const resetPage = useCallback(() => {
+    setPage(1);
+  }, []);
 
   return (
     <>
@@ -51,19 +79,19 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
       </header>
 
       <div id="filter-bar">
-        <button className={`filter-btn ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>All</button>
+        <button className={`filter-btn ${filter === "all" ? "active" : ""}`} onClick={() => { setFilter("all"); resetPage(); }}>All</button>
         {subjects.map((s) => (
           <button
             key={s}
             className={`filter-btn ${filter === s ? "active" : ""}`}
-            onClick={() => setFilter(s)}
+            onClick={() => { setFilter(s); resetPage(); }}
           >
             {s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
         <input
           id="search-input" type="search" placeholder="Search title or tag…"
-          value={search} onChange={(e) => setSearch(e.target.value)}
+          value={search} onChange={(e) => { setSearch(e.target.value); resetPage(); }}
         />
       </div>
 
@@ -71,33 +99,48 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
         {filtered.length === 0 ? (
           <div id="gallery-empty">No artworks match your filter.</div>
         ) : (
-          filtered.map((art) => {
-            const status = getStatusDisplay(art.fields.status);
-            return (
-              <div
-                key={art.id}
-                className={`art-card card-${art.fields.orientation || "landscape"}`}
-                onClick={() => setLightbox(art)}
-              >
-                <div className="thumb-wrapper">
-                  <Image
-                    src={getThumbUrl(art)}
-                    alt={art.fields.title}
-                    fill
-                    unoptimized
-                    sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                    className="gallery-img"
-                  />
+          <>
+            {paginated.map((art) => {
+              const status = getStatusDisplay(art.fields.status);
+              const thumbSrc = getThumbUrl(art);
+              const hasImage = thumbSrc.length > 0;
+              return (
+                <div
+                  key={art.id}
+                  className={`art-card card-${art.fields.orientation || "landscape"}`}
+                  onClick={() => setLightbox(art)}
+                >
+                  <div className="thumb-wrapper">
+                    {hasImage ? (
+                      <Image
+                        src={thumbSrc}
+                        alt={art.fields.title}
+                        fill
+                        unoptimized
+                        sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                        className="gallery-img"
+                      />
+                    ) : (
+                      <div className="gallery-placeholder" aria-label="No image available">
+                        <span>No image</span>
+                      </div>
+                    )}
+                  </div>
+                  <h3>{art.fields.title}</h3>
+                  <p className="meta">
+                    {art.fields.medium}
+                    {art.fields.dimensions ? ` · ${art.fields.dimensions}` : ""}
+                  </p>
+                  {status.label && <span className={`status-badge ${status.className}`}>{status.label}</span>}
                 </div>
-                <h3>{art.fields.title}</h3>
-                <p className="meta">
-                  {art.fields.medium}
-                  {art.fields.dimensions ? ` · ${art.fields.dimensions}` : ""}
-                </p>
-                {status.label && <span className={`status-badge ${status.className}`}>{status.label}</span>}
-              </div>
-            );
-          })
+              );
+            })}
+            {hasMore && (
+              <button id="load-more-btn" className="load-more" onClick={loadMore}>
+                Load More ({paginated.length} / {filtered.length})
+              </button>
+            )}
+          </>
         )}
       </div>
 
