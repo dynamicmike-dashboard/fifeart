@@ -84,6 +84,7 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
                     src={getThumbUrl(art)}
                     alt={art.fields.title}
                     fill
+                    unoptimized
                     sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                     className="gallery-img"
                   />
@@ -110,6 +111,7 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
                 alt={lightbox.fields.title}
                 width={lightbox.fields.image?.[0]?.width || 1200}
                 height={lightbox.fields.image?.[0]?.height || 900}
+                unoptimized
                 className="art-large"
                 priority
               />
