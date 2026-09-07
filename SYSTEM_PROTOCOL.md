@@ -37,10 +37,11 @@ Single record for About the Artist page
 - `order` on paintings: `fldj9A8Ssz4vCU2vXy1`
 
 ## RESOLVED
-- Image upload + reorder — both working
 - Gmail SMTP — App Password configured, `SMTP_USER=nancyberrykdy@gmail.com`, emails to both nancyberrykdy + dynamicmike+fifeart
 
-(All items resolved)
+## PENDING 2026-09-06
+- Upload `500 libvips` fixed via bypass sharp, `201` + alert works — commit `fda9753`/`3711118`
+- Gallery still labels-only: S3 `AccessDenied` on presigned URLs, proxy added `app/api/image` via `POST /api/base/{baseId}/sign-attachment-urls` with `302` redirect (commit `e0f8841`), manual fetch `table/Sz1t3IuLesBa` via proxy returns `200` but live uploads still not appearing — needs Vercel logs for `/api/image` and recent record token/path verification
 
 ## DEPLOYMENT COMMANDS
 - `npx next build` — local build
@@ -51,7 +52,8 @@ Single record for About the Artist page
 ## CONVENTIONS
 - Field names use `fieldKeyType=name` in all Teable API calls
 - **SCOPE RESTRICTION**: Only operate within `F:\Mike d drive\Mike Webs\mAIstermind.com\projects\FifeArt website 26jul26\fifeart-github`. Do NOT create repos, write outside this folder, or use browser automation without explicit approval.
-- Upload uses record-level endpoint: `POST /api/table/{tableId}/record/{recordId}/{fieldId}/uploadAttachment`
+- Upload uses record-level endpoint: `POST /api/table/{tableId}/record/{recordId}/{fieldId}/uploadAttachment` — now bypasses sharp (Vercel libvips missing), uploads original
+- Gallery uses `GET /api/image?token=&path=` → `POST /api/base/{baseId}/sign-attachment-urls` → `302` to fresh S3 URL (6d expiry, cache 1h), `unoptimized` on `next/image` to avoid optimizer stripping query
 - Image reference: `{ id: uploadResponse.id }` (not token, not full object)
 - All pages dynamic (`force-dynamic` or `cache: "no-store"`) to avoid stale presigned URLs
-- Admin auth: cookie-based, checked in each API route
+- Admin auth: cookie-based, checked in each API route — requires `credentials: include` + `sameSite: none`
