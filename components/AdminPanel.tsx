@@ -101,7 +101,8 @@ export default function AdminPanel() {
       setAddImage(null);
       setAddImagePreview("");
       await load();
-      alert("Artwork saved!");
+      const confirmed = window.confirm("Artwork saved! Open gallery to view it?");
+      if (confirmed) window.open("/", "_blank");
     } catch (e: any) {
       alert("Error: " + e.message);
     } finally {
