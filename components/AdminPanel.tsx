@@ -101,6 +101,7 @@ export default function AdminPanel() {
       setAddImage(null);
       setAddImagePreview("");
       await load();
+      alert("Artwork saved!");
     } catch (e: any) {
       alert("Error: " + e.message);
     } finally {
