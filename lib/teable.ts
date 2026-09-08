@@ -89,10 +89,14 @@ export async function updatePainting(recordId: string, fields: Record<string, un
 
 export async function deletePainting(recordId: string): Promise<void> {
   if (!isConfigured()) return;
-  await fetch(
+  const res = await fetch(
     `${BASE_URL}/api/table/${TABLE_ID}/record/${recordId}`,
     { method: "DELETE", headers: authHeaders() }
   );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Teable DELETE ${res.status}: ${text}`);
+  }
 }
 
 export async function getAboutContent(): Promise<any> {

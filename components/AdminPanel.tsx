@@ -149,13 +149,21 @@ export default function AdminPanel() {
 
   async function deleteArt(id: string, title: string) {
     if (!confirm(`Delete "${title}"?`)) return;
-    await fetch("/api/paintings", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-      credentials: "include",
-    });
-    await load();
+    try {
+      const res = await fetch("/api/paintings", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Delete failed");
+      }
+      await load();
+    } catch (e: any) {
+      alert("Delete failed: " + e.message);
+    }
   }
 
   async function moveUp(index: number) {

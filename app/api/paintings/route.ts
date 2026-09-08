@@ -7,7 +7,12 @@ function checkAuth() {
 
 export async function GET() {
   const paintings = await getPaintings();
-  return Response.json(paintings);
+  return new Response(JSON.stringify(paintings), {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
+  });
 }
 
 export async function POST(request: Request) {
@@ -40,6 +45,15 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await request.json();
-  await deletePainting(id);
-  return Response.json({ ok: true });
+  try {
+    await deletePainting(id);
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    });
+  } catch (e: any) {
+    return Response.json({ error: e.message }, { status: 500 });
+  }
 }
