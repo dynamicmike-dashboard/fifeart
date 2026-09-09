@@ -16,7 +16,6 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
   const [showCommission, setShowCommission] = useState(false);
   const [showEnquiry, setShowEnquiry] = useState(false);
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<"latest" | "alpha" | "price-asc" | "price-desc">("latest");
 
   const subjects = useMemo(() => {
     const s = new Set<string>();
@@ -24,28 +23,13 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
     return Array.from(s).sort();
   }, [all]);
 
-  const sortedAll = useMemo(() => {
-    return [...all].sort((a, b) => {
-      switch (sortBy) {
-        case "alpha":
-          return (a.fields.title || "").localeCompare(b.fields.title || "");
-        case "price-asc":
-          return (a.fields.priceGBP || 0) - (b.fields.priceGBP || 0);
-        case "price-desc":
-          return (b.fields.priceGBP || 0) - (a.fields.priceGBP || 0);
-        case "latest":
-        default: {
-          const timeA = new Date(a.createdTime || 0).getTime();
-          const timeB = new Date(b.createdTime || 0).getTime();
-          if (timeB !== timeA) return timeB - timeA;
-          return (a.fields.order ?? 999) - (b.fields.order ?? 999);
-        }
-      }
-    });
-  }, [all, sortBy]);
-
   const filtered = useMemo(() => {
-    let list = sortedAll;
+    let list = [...all].sort((a, b) => {
+      const timeA = new Date(a.createdTime || 0).getTime();
+      const timeB = new Date(b.createdTime || 0).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+      return (a.fields.order ?? 999) - (b.fields.order ?? 999);
+    });
     if (filter !== "all") {
       list = list.filter((a) => (a.fields.subjects || []).includes(filter));
     }
@@ -58,7 +42,7 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
       });
     }
     return list;
-  }, [sortedAll, filter, search]);
+  }, [all, filter, search]);
 
   const paginated = useMemo(() => {
     const start = 0;
@@ -101,17 +85,6 @@ export default function Gallery({ paintings: all }: { paintings: PaintingRecord[
             {s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
-        <select
-          id="sort-select"
-          value={sortBy}
-          onChange={(e) => { setSortBy(e.target.value as typeof sortBy); resetPage(); }}
-          aria-label="Sort by"
-        >
-          <option value="latest">Latest First</option>
-          <option value="alpha">A–Z</option>
-          <option value="price-asc">Price: Low → High</option>
-          <option value="price-desc">Price: High → Low</option>
-        </select>
         <input
           id="search-input" type="search" placeholder="Search title or tag…"
           value={search} onChange={(e) => { setSearch(e.target.value); resetPage(); }}

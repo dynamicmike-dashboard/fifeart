@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { PaintingRecord, SUBJECT_OPTIONS, STATUS_OPTIONS, ORIENTATION_OPTIONS } from "@/lib/types";
 import { getThumbUrl, getStatusDisplay } from "@/lib/utils";
 
@@ -44,6 +44,7 @@ export default function AdminPanel() {
   const [aboutStory, setAboutStory] = useState("");
   const [aboutImage, setAboutImage] = useState<File | null>(null);
   const [aboutImagePreview, setAboutImagePreview] = useState("");
+  const [adminSortBy, setAdminSortBy] = useState<"latest" | "alpha" | "price-asc" | "price-desc">("latest");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/paintings");
@@ -198,7 +199,25 @@ export default function AdminPanel() {
     await load();
   }
 
-  const sorted = [...paintings].sort((a, b) => (a.fields.order ?? 999) - (b.fields.order ?? 999));
+  const sorted = useMemo(() => {
+    return [...paintings].sort((a, b) => {
+      switch (adminSortBy) {
+        case "alpha":
+          return (a.fields.title || "").localeCompare(b.fields.title || "");
+        case "price-asc":
+          return (a.fields.priceGBP || 0) - (b.fields.priceGBP || 0);
+        case "price-desc":
+          return (b.fields.priceGBP || 0) - (a.fields.priceGBP || 0);
+        case "latest":
+        default: {
+          const timeA = new Date(a.createdTime || 0).getTime();
+          const timeB = new Date(b.createdTime || 0).getTime();
+          if (timeB !== timeA) return timeB - timeA;
+          return (a.fields.order ?? 999) - (b.fields.order ?? 999);
+        }
+      }
+    });
+  }, [paintings, adminSortBy]);
 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -335,6 +354,17 @@ export default function AdminPanel() {
       {tab === "artworks" && (<>
       <div className="toolbar">
         <button className="primary" onClick={() => setShowAdd(!showAdd)}>+ Add Artwork</button>
+        <select
+          id="admin-sort-select"
+          value={adminSortBy}
+          onChange={(e) => setAdminSortBy(e.target.value as typeof adminSortBy)}
+          aria-label="Sort artworks"
+        >
+          <option value="latest">Latest First</option>
+          <option value="alpha">A–Z</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+        </select>
       </div>
 
       {showAdd && (
